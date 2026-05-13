@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Directory</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        #app {
+            max-width: 700px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .user {
+            padding: 10px;
+            margin: 10px 0;
+            background: #f9f9f9;
+            border-left: 4px solid #007bff;
+        }
+
+        .user h3 {
+            margin: 0;
+        }
+
+        .user small {
+            color: gray;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <h1>User Directory</h1>
+
+        <input id="search" placeholder="Search by name or email..." />
+
+        <select id="cityFilter">
+            <option value="all">All Cities</option>
+        </select>
+
+        <select id="sort">
+            <option value="az">Sort A-Z</option>
+            <option value="za">Sort Z-A</option>
+        </select>
+
+        <div id="users-container"></div>
+    </div>
+
+    <script>
+        let allUsers = [];
+
+        async function fetchUsers() {
+            const res = await fetch("https://jsonplaceholder.typicode.com/users");
+            return await res.json();
+        }
+
+        function displayUsers(users) {
+            const container = document.getElementById("users-container");
+            container.innerHTML = "";
+
+            if (users.length === 0) {
+                container.innerHTML = "<p>No users found</p>";
+                return;
+            }
+
+            users.forEach(user => {
+                container.innerHTML += `
+                    <div class="user">
+                        <h3>${user.name}</h3>
+                        <p>${user.email}</p>
+                        <small>${user.address.city}</small>
+                    </div>
+                `;
+            });
+        }
+
+        function populateCities(users) {
+            const cityFilter = document.getElementById("cityFilter");
+
+            // reset dropdown (IMPORTANT FIX)
+            cityFilter.innerHTML = `<option value="all">All Cities</option>`;
+
+            const cities = [...new Set(users.map(u => u.address.city))];
+
+            cities.forEach(city => {
+                const option = document.createElement("option");
+                option.value = city;
+                option.textContent = city;
+                cityFilter.appendChild(option);
+            });
+        }
+
+        function applyFilters() {
+            const search = document.getElementById("search").value.toLowerCase().trim();
+            const city = document.getElementById("cityFilter").value;
+            const sort = document.getElementById("sort").value;
+
+            let filtered = [...allUsers];
+
+            // SEARCH
+            filtered = filtered.filter(user =>
+                user.name.toLowerCase().includes(search) ||
+                user.email.toLowerCase().includes(search)
+            );
+
+            // CITY FILTER
+            if (city !== "all") {
+                filtered = filtered.filter(user => user.address.city === city);
+            }
+
+            // SORT
+            filtered.sort((a, b) => {
+                return sort === "az"
+                    ? a.name.localeCompare(b.name)
+                    : b.name.localeCompare(a.name);
+            });
+
+            displayUsers(filtered);
+        }
+
+        async function init() {
+            allUsers = await fetchUsers();
+
+            displayUsers(allUsers);
+            populateCities(allUsers);
+
+            document.getElementById("search").addEventListener("input", applyFilters);
+            document.getElementById("cityFilter").addEventListener("change", applyFilters);
+            document.getElementById("sort").addEventListener("change", applyFilters);
+        }
+
+        init();
+    </script>
+
+</body>
+
+</html>
