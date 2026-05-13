@@ -71,14 +71,3 @@ Built by Luna
 📜 License
 
 This project is open-source and free to use.
-
-🚀 If you want next level README
-
-I can also help you:
-
-add badges (like GitHub stars, version, etc.)
-make it look like a professional developer portfolio project
-or 
-convert it into a GitHub-ready repo setup
-
-Just tell me 👍
